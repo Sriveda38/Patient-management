@@ -1,13 +1,16 @@
 package com.first.patientmanagement.controller;
 
+import com.first.patientmanagement.dto.AuthResponse;
 import com.first.patientmanagement.entity.Patient;
 import com.first.patientmanagement.service.PatientRegistration;
 import com.first.patientmanagement.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.*;
 import java.util.List;
+
 
 @RestController
 public class PatientController {
@@ -18,22 +21,25 @@ public class PatientController {
     @Autowired
     private PatientRegistration patientRegistration;
 
+    @CrossOrigin(origins = "*")
+
     @GetMapping("/hello")
     public String helloWorld () {
         return "Hello World";
     }
 
-    @PostMapping("/register")
+
+    @PostMapping("/admin/add")
     public Patient registerUser(@RequestBody Patient patient) {
         return patientRegistration.registerPatient(patient);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody Patient patient) {
+    public AuthResponse login(@RequestBody Patient patient) {
         return patientRegistration.verify(patient);
     }
 
-    @GetMapping("/getAllPatients")
+    @GetMapping("/user/getAllPatients")
     public List<Patient> getAllPatients () {
         return patientService.getAllPatients();
     }
@@ -45,19 +51,16 @@ public class PatientController {
     }
 
 
-    @PutMapping("/editPatientById/{id}")
+    @PutMapping("/admin/update/{id}")
     public String updatePatientById(@RequestBody Patient patient, @PathVariable int id) {
         String response;
-       return  response = patientService.updatePatientById(patient, id);
+       return  response = patientService.updatePatient(patient, id);
     }
 
-    @DeleteMapping("/deletePatientById/{id}")
-    public String deletePatientById(@PathVariable int id) {
+    @DeleteMapping("/admin/delete/{id}")
+    public ResponseEntity<?> deletePatient(@PathVariable int id) {
         String response;
-        return response =  patientService.deletePatientById(id);
+        response = patientService.deletePatient(id);
+        return ResponseEntity.ok(response);
     }
-
-
-
-
 }

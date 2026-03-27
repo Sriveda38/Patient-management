@@ -1,5 +1,6 @@
 package com.first.patientmanagement.service;
 
+import com.first.patientmanagement.dto.AuthResponse;
 import com.first.patientmanagement.entity.Patient;
 import com.first.patientmanagement.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -21,7 +23,8 @@ public class PatientRegistration {
 
     @Autowired
     private JWTService jwtService;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Patient registerPatient(@RequestBody Patient patient) {
 
@@ -29,16 +32,34 @@ public class PatientRegistration {
         savedPatient.setId(null);
         savedPatient.setPatientName(patient.getPatientName());
         savedPatient.setEmail(patient.getEmail());
-        savedPatient.setPassword(encoder.encode(patient.getPassword()));
+        savedPatient.setPassword(passwordEncoder.encode(patient.getPassword()));
+        savedPatient.setRole(patient.getRole());
         repo.save(savedPatient);
         return savedPatient;
     }
 
-    public String verify(Patient patient) {
-        Authentication authentication =
-                authManager.authenticate(new UsernamePasswordAuthenticationToken(patient.getPatientName(),patient.getPassword()));
-        if(authentication.isAuthenticated())
-            return jwtService.generateToken(patient.getPatientName());
-        return "Fail";
+    public AuthResponse verify(Patient patient) {
+        try {
+            Authentication authentication =
+                    authManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    patient.getEmail(),
+                                    patient.getPassword()
+                            )
+                    );
+
+            if (authentication.isAuthenticated()) {
+                Patient dbPatient = repo.findByEmail(patient.getEmail());
+                String token = jwtService.generateToken(patient.getEmail());
+                String role = dbPatient.getRole();
+                return new AuthResponse(token, role);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

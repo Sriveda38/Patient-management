@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PatientRepository extends JpaRepository<Patient, Integer> {
 
-    Patient findByPatientName(String patientName);
+    Patient findByEmail(String email);
 
 
 }

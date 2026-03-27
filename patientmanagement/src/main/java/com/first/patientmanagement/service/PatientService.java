@@ -28,24 +28,25 @@ public class PatientService  implements UserDetailsService {
         return patientRepository.getById(id);
     }
 
-    public String deletePatientById (int id) {
+    public String deletePatient (int id) {
          patientRepository.deleteById(id);
          return "Deleted successfully";
     }
 
-    public String updatePatientById(@RequestBody Patient patient, int id) {
+    public String updatePatient(@RequestBody Patient patient, int id) {
         Patient updatedPatient = new Patient();
         updatedPatient.setId(patient.getId());
         updatedPatient.setPatientName(patient.getPatientName());
         updatedPatient.setEmail(patient.getEmail());
+        updatedPatient.setRole(patient.getRole());
         patientRepository.save(updatedPatient);
         return "Updated patient successfully";
     }
 
     @Override
-    public UserDetails loadUserByUsername(String patientName) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Patient patient = patientRepository.findByPatientName(patientName);
+        Patient patient = patientRepository.findByEmail(email);
 
         if(patient == null) {
             System.out.println("User not found");
